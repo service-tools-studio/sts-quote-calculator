@@ -17,6 +17,27 @@ type LaunchSectionComplexity = "essentials" | "extra";
 
 type BusinessPageRange = "fiveOrLess" | "sixToEight" | "ninePlus";
 
+interface TooltipIconProps {
+  text: string;
+}
+
+function TooltipIcon({ text }: TooltipIconProps) {
+  return (
+    <div className="relative inline-flex items-center">
+      <button
+        type="button"
+        className="group inline-flex h-6 w-6 items-center justify-center rounded-full border border-rose-100 bg-rose-50 text-[10px] font-semibold text-rose-600 shadow-sm transition hover:border-rose-200 hover:bg-rose-100"
+        aria-label="Explain this to the client"
+      >
+        ?
+        <div className="pointer-events-none absolute right-0 top-full z-20 mt-2 hidden w-72 rounded-2xl bg-zinc-900 px-3 py-2 text-left text-[11px] leading-relaxed text-zinc-50 shadow-xl ring-1 ring-zinc-800 group-hover:block group-focus-visible:block">
+          {text}
+        </div>
+      </button>
+    </div>
+  );
+}
+
 function projectTypeLabel(type: ProjectType): string {
   return type === "launch" ? "Launch Site" : "Business Website";
 }
@@ -25,6 +46,7 @@ interface InterviewQuestionProps {
   step?: number;
   title: string;
   helperText?: string;
+  tooltip?: string;
   children: React.ReactNode;
 }
 
@@ -32,12 +54,13 @@ function InterviewQuestion({
   step,
   title,
   helperText,
+  tooltip,
   children,
 }: InterviewQuestionProps) {
   return (
     <section className="rounded-2xl bg-white/80 p-5 shadow-sm ring-1 ring-rose-50/80 sm:p-6">
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="flex-1">
           <div className="flex items-center gap-3">
             {typeof step === "number" && (
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 text-xs font-semibold text-rose-700">
@@ -52,6 +75,11 @@ function InterviewQuestion({
             <p className="mt-2 text-xs text-zinc-500 sm:text-sm">{helperText}</p>
           )}
         </div>
+        {tooltip && (
+          <div className="ml-2 mt-1 shrink-0">
+            <TooltipIcon text={tooltip} />
+          </div>
+        )}
       </div>
       <div className="mt-4 space-y-3">{children}</div>
     </section>
@@ -206,6 +234,7 @@ export default function Home() {
   const [launchCopywriting, setLaunchCopywriting] = useState(false);
   const [launchBranding, setLaunchBranding] = useState(false);
   const [launchImages, setLaunchImages] = useState(false);
+  const [launchCustomIcons, setLaunchCustomIcons] = useState(false);
   const [launchVisualPolish, setLaunchVisualPolish] = useState(false);
   const [launchRush, setLaunchRush] = useState(false);
 
@@ -241,7 +270,7 @@ export default function Home() {
       copywritingAssistance: launchCopywriting,
       brandingHelp: launchBranding,
       stockImageSourcing: launchImages,
-      customIcons: false,
+      customIcons: launchCustomIcons,
       animations: launchVisualPolish,
       rushBuild: launchRush,
     }),
@@ -326,6 +355,7 @@ export default function Home() {
     setLaunchCopywriting(false);
     setLaunchBranding(false);
     setLaunchImages(false);
+    setLaunchCustomIcons(false);
     setLaunchVisualPolish(false);
     setLaunchRush(false);
 
@@ -478,6 +508,7 @@ export default function Home() {
               step={1}
               title="Identify the type of website"
               helperText="Launch Site is best for a simple one-page site. Business Website is for a structured, multi-page build."
+              tooltip="Use this first question to guide the client into the right package. A Launch Site is a simple one-page website, while a Business Website is a larger multi-page site with more structure."
             >
               <p className="text-sm text-zinc-700">
                 “To start, are you looking for a simple one-page website, or a
@@ -524,6 +555,7 @@ export default function Home() {
                 <InterviewQuestion
                   title="Launch Site — Sections / content complexity"
                   helperText="Use this to estimate how long the page will be and how much content we’re organizing."
+                  tooltip="A section is a block of content on the page, like an About section, Services section, FAQ, testimonials, or contact area. Most simple websites have around 4–5 sections. If you want additional sections to explain your services or answer common questions, we can add those."
                 >
                   <p className="text-sm text-zinc-700">
                     “About how much information do you want on the page?”
@@ -597,7 +629,10 @@ export default function Home() {
                   )}
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Launch Site — Booking">
+                <InterviewQuestion
+                  title="Launch Site — Booking"
+                  tooltip="This allows customers to schedule appointments directly from your website. For example, they could click a button and book a time with you through a scheduling system like Calendly or Square."
+                >
                   <p className="text-sm text-zinc-700">
                     “Do you want people to be able to book appointments directly
                     from the website?”
@@ -626,7 +661,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Launch Site — Reviews">
+                <InterviewQuestion
+                  title="Launch Site — Reviews"
+                  tooltip="This displays your Google reviews directly on your website so visitors can see feedback from real customers. Reviews help build trust and make people more comfortable reaching out to you."
+                >
                   <p className="text-sm text-zinc-700">
                     “Would you like your Google reviews displayed on the website
                     for social proof?”
@@ -655,7 +693,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Launch Site — Service area">
+                <InterviewQuestion
+                  title="Launch Site — Service area"
+                  tooltip="If you serve specific cities or neighborhoods, we can include a map or service area section showing where you work. This helps customers quickly see whether you serve their location."
+                >
                   <p className="text-sm text-zinc-700">
                     “Do you serve specific cities or areas and want a map or
                     service area section?”
@@ -684,7 +725,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Launch Site — Content / copy">
+                <InterviewQuestion
+                  title="Launch Site — Content / copy"
+                  tooltip="If you’re not sure what text should go on the website, we can help write it for you. This includes things like headlines, service descriptions, and calls to action that explain what you do clearly to your customers."
+                >
                   <p className="text-sm text-zinc-700">
                     “Will you be providing the text and content for the website,
                     or would you like help writing it?”
@@ -723,7 +767,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Launch Site — Branding">
+                <InterviewQuestion
+                  title="Launch Site — Branding"
+                  tooltip="If you don’t already have a clear logo, colors, or style for your business, we can help choose a clean and professional look for the website so everything feels consistent."
+                >
                   <p className="text-sm text-zinc-700">
                     “Do you already have a logo and brand colors you want to
                     use?”
@@ -759,7 +806,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Launch Site — Images">
+                <InterviewQuestion
+                  title="Launch Site — Images"
+                  tooltip="If you don’t have photos to use on the website, we can help select professional images that fit your business and the overall style of the site."
+                >
                   <p className="text-sm text-zinc-700">
                     “Will you be providing photos for the website?”
                   </p>
@@ -794,7 +844,41 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Launch Site — Visual polish">
+                <InterviewQuestion
+                  title="Launch Site — Custom icons / graphics"
+                  tooltip="This includes small visual graphics or icons that help explain services or features in a simple visual way. They can make the website feel more polished and easier to scan."
+                >
+                  <p className="text-sm text-zinc-700">
+                    “Would you like us to include simple custom icons or graphics to help explain your services visually?”
+                  </p>
+                  <div className="inline-flex gap-2 rounded-full bg-rose-50 p-1">
+                    <button
+                      type="button"
+                      onClick={() => setLaunchCustomIcons(false)}
+                      className={`rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${!launchCustomIcons
+                        ? "bg-white text-zinc-900 shadow-sm"
+                        : "text-zinc-500"
+                        }`}
+                    >
+                      No
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLaunchCustomIcons(true)}
+                      className={`rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${launchCustomIcons
+                        ? "bg-white text-zinc-900 shadow-sm"
+                        : "text-zinc-500"
+                        }`}
+                    >
+                      Yes (adds {formatCurrency(75)})
+                    </button>
+                  </div>
+                </InterviewQuestion>
+
+                <InterviewQuestion
+                  title="Launch Site — Visual polish"
+                  tooltip="These are subtle visual effects, like sections gently appearing as you scroll or buttons responding when you hover over them. They help the website feel more modern and polished."
+                >
                   <p className="text-sm text-zinc-700">
                     “Would you like the site to include small animations or
                     motion effects when people scroll or hover?”
@@ -823,7 +907,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Launch Site — Timeline">
+                <InterviewQuestion
+                  title="Launch Site — Timeline"
+                  tooltip="Our normal build timeline allows time for design, feedback, and testing. If you need the website completed faster than our standard schedule, we can prioritize the project for an accelerated launch."
+                >
                   <p className="text-sm text-zinc-700">
                     “Do you have a specific timeline for launching the website?”
                   </p>
@@ -865,9 +952,10 @@ export default function Home() {
                 <InterviewQuestion
                   title="Business Website — Page count"
                   helperText="Most businesses have pages like Home, Services, About, and Contact. Use this to estimate total page count."
+                  tooltip="A page is a separate part of your website, like Home, About, Services, or Contact. If your website needs more pages beyond the basic set, we can add those to better explain your business."
                 >
                   <p className="text-sm text-zinc-700">
-                    “About how many pages do you think your website will need?”
+                    "How many pages do you think your website will need?"
                   </p>
 
                   <div className="grid gap-3 sm:grid-cols-3">
@@ -953,6 +1041,7 @@ export default function Home() {
                 <InterviewQuestion
                   title="Business Website — Service pages"
                   helperText="Great for businesses with distinct services that each deserve their own detail page."
+                  tooltip="Instead of listing all your services on one page, you can have a dedicated page for each service. This helps customers better understand what you offer and can improve visibility in search results."
                 >
                   <p className="text-sm text-zinc-700">
                     “Would you like a detailed page for each of your services?”
@@ -1015,9 +1104,12 @@ export default function Home() {
                   )}
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Business Website — Blog">
+                <InterviewQuestion
+                  title="Business Website — Blog"
+                  tooltip="A blog allows you to publish articles or updates on your website. Many businesses use blogs to share tips, answer customer questions, or improve their visibility in search engines."
+                >
                   <p className="text-sm text-zinc-700">
-                    “Would you like a blog so you can make blog posts on the site?”
+                    “Would you like a blog so you can publish articles or updates on the site?”
                   </p>
                   <div className="inline-flex gap-2 rounded-full bg-rose-50 p-1">
                     <button
@@ -1043,7 +1135,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Business Website — Portfolio / gallery">
+                <InterviewQuestion
+                  title="Business Website — Portfolio / gallery"
+                  tooltip="This allows you to showcase photos of your work or past projects. It’s especially helpful for businesses where customers want to see examples before choosing a provider."
+                >
                   <p className="text-sm text-zinc-700">
                     “Do you want to showcase photos of your work or past
                     projects on the website?”
@@ -1072,7 +1167,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Business Website — Booking">
+                <InterviewQuestion
+                  title="Business Website — Booking"
+                  tooltip="This allows visitors to schedule appointments directly through the website using your preferred booking system."
+                >
                   <p className="text-sm text-zinc-700">
                     “Should customers be able to schedule appointments directly
                     from the website?”
@@ -1101,10 +1199,12 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Business Website — Lead capture / CRM">
+                <InterviewQuestion
+                  title="Business Website — Lead capture / CRM"
+                  tooltip="If you use a system like Mailchimp or HubSpot to track leads or customer inquiries, we can connect your website forms to that system so new inquiries automatically go into your pipeline."
+                >
                   <p className="text-sm text-zinc-700">
-                    “Do you use a system to collect leads, like HubSpot,
-                    GoHighLevel, or a mailing list?”
+                    “Do you currently use any system to track customer inquiries or leads, or do they just come through email?”
                   </p>
                   <div className="inline-flex gap-2 rounded-full bg-rose-50 p-1">
                     <button
@@ -1130,7 +1230,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Business Website — Reviews">
+                <InterviewQuestion
+                  title="Business Website — Reviews"
+                  tooltip="This shows your Google reviews on the website so visitors can see feedback from real customers, which helps build trust."
+                >
                   <p className="text-sm text-zinc-700">
                     “Would you like your Google reviews shown on the site?”
                   </p>
@@ -1158,7 +1261,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Business Website — Service areas">
+                <InterviewQuestion
+                  title="Business Website — Service areas"
+                  tooltip="This creates a page that highlights the cities or regions your business serves so visitors can easily confirm whether you operate in their area."
+                >
                   <p className="text-sm text-zinc-700">
                     “Do you want a map that highlights the cities or areas you
                     serve?”
@@ -1187,7 +1293,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Business Website — Images">
+                <InterviewQuestion
+                  title="Business Website — Images"
+                  tooltip="If you don’t have enough photos for the website, we can help select professional images that match your brand and industry."
+                >
                   <p className="text-sm text-zinc-700">
                     “Will you be providing photos for the website?”
                   </p>
@@ -1222,7 +1331,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Business Website — Content writing">
+                <InterviewQuestion
+                  title="Business Website — Content writing"
+                  tooltip="Writing website content can be challenging. We can help write or refine the text on each page so it clearly explains your services and encourages customers to contact you."
+                >
                   <p className="text-sm text-zinc-700">
                     “Will you be providing the text for each page, or would you
                     like help writing it?”
@@ -1258,7 +1370,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Business Website — Branding">
+                <InterviewQuestion
+                  title="Business Website — Branding"
+                  tooltip="If your business doesn’t yet have a defined look or style, we can help choose colors, typography, and visual elements so the website feels cohesive and professional."
+                >
                   <p className="text-sm text-zinc-700">
                     “Do you already have a logo, brand colors, and a general
                     style for the website?”
@@ -1292,7 +1407,10 @@ export default function Home() {
                   </div>
                 </InterviewQuestion>
 
-                <InterviewQuestion title="Business Website — Motion / visual polish">
+                <InterviewQuestion
+                  title="Business Website — Motion / visual polish"
+                  tooltip="These are more refined motion effects used throughout the site to create a polished and modern feel. They help the website stand out and feel more engaging."
+                >
                   <p className="text-sm text-zinc-700">
                     “Would you like the website to include subtle animations or
                     motion effects for a more polished feel?”
@@ -1324,6 +1442,7 @@ export default function Home() {
                 <InterviewQuestion
                   title="Business Website — Custom features detection"
                   helperText="This protects you from under-quoting projects that really belong in the custom tier."
+                  tooltip="Some websites require special features beyond a typical business website, like customer accounts, online portals, or complex functionality. If your project needs something like that, we may recommend a custom development approach."
                 >
                   <p className="text-sm text-zinc-700">
                     “Does the website need any special features like accounts,
