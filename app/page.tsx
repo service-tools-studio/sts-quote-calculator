@@ -295,9 +295,10 @@ export default function Home() {
   }, [businessTotalPages]);
 
   const businessAdvancedServicePagesNum = useMemo(() => {
-    if (businessAdvancedServicePages === "") return 0;
+    if (businessAdvancedServicePages === "0") return 0;
+    if (businessAdvancedServicePages === "") return 1;
     const n = parseInt(businessAdvancedServicePages, 10);
-    return Number.isNaN(n) ? 0 : Math.max(0, n);
+    return Number.isNaN(n) ? 1 : Math.max(1, n);
   }, [businessAdvancedServicePages]);
 
   const launchInputs: LaunchInputs = useMemo(
@@ -1104,32 +1105,30 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => setBusinessAdvancedServicePages("0")}
-                      className={`rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${businessAdvancedServicePagesNum === 0
+                      className={`rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${businessAdvancedServicePages === "0"
                         ? "bg-white text-zinc-900 shadow-sm"
                         : "text-zinc-500"
-                        }`}
+                      }`}
                     >
                       No
                     </button>
                     <button
                       type="button"
                       onClick={() =>
-                        setBusinessAdvancedServicePages(
-                          businessAdvancedServicePagesNum > 0
-                            ? businessAdvancedServicePages
-                            : "3"
+                        setBusinessAdvancedServicePages((prev) =>
+                          prev === "0" ? "3" : prev
                         )
                       }
-                      className={`rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${businessAdvancedServicePagesNum > 0
+                      className={`rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${businessAdvancedServicePages !== "0"
                         ? "bg-white text-zinc-900 shadow-sm"
                         : "text-zinc-500"
-                        }`}
+                      }`}
                     >
                       Yes
                     </button>
                   </div>
 
-                  {businessAdvancedServicePagesNum > 0 && (
+                  {businessAdvancedServicePages !== "0" && (
                     <div className="mt-2 space-y-1">
                       <label className="flex flex-col gap-1 text-xs text-zinc-700 sm:text-sm">
                         <span>
