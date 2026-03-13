@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BusinessInputs,
   LaunchInputs,
@@ -22,18 +22,39 @@ interface TooltipIconProps {
 }
 
 function TooltipIcon({ text }: TooltipIconProps) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
   return (
-    <div className="relative inline-flex items-center">
+    <div ref={containerRef} className="relative inline-flex items-center">
       <button
         type="button"
-        className="group inline-flex h-6 w-6 items-center justify-center rounded-full border border-rose-100 bg-rose-50 text-[10px] font-semibold text-rose-600 shadow-sm transition hover:border-rose-200 hover:bg-rose-100"
+        onClick={() => setOpen((prev) => !prev)}
+        className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-rose-100 bg-rose-50 text-[10px] font-semibold text-rose-600 shadow-sm transition hover:border-rose-200 hover:bg-rose-100 aria-expanded={open}"
         aria-label="Explain this to the client"
       >
         ?
-        <div className="pointer-events-none absolute right-0 top-full z-20 mt-2 hidden w-72 rounded-2xl bg-zinc-900 px-3 py-2 text-left text-[11px] leading-relaxed text-zinc-50 shadow-xl ring-1 ring-zinc-800 group-hover:block group-focus-visible:block">
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-20 mt-2 w-72 rounded-2xl bg-zinc-900 px-3 py-2 text-left text-[11px] leading-relaxed text-zinc-50 shadow-xl ring-1 ring-zinc-800">
           {text}
         </div>
-      </button>
+      )}
     </div>
   );
 }
@@ -227,7 +248,7 @@ export default function Home() {
 
   const [launchSectionComplexity, setLaunchSectionComplexity] =
     useState<LaunchSectionComplexity>("essentials");
-  const [launchTotalSections, setLaunchTotalSections] = useState<number>(5);
+  const [launchTotalSections, setLaunchTotalSections] = useState<string>("5");
   const [launchBooking, setLaunchBooking] = useState(false);
   const [launchReviews, setLaunchReviews] = useState(false);
   const [launchServiceArea, setLaunchServiceArea] = useState(false);
@@ -240,9 +261,9 @@ export default function Home() {
 
   const [businessPageRange, setBusinessPageRange] =
     useState<BusinessPageRange>("fiveOrLess");
-  const [businessTotalPages, setBusinessTotalPages] = useState<number>(5);
+  const [businessTotalPages, setBusinessTotalPages] = useState<string>("5");
   const [businessAdvancedServicePages, setBusinessAdvancedServicePages] =
-    useState<number>(0);
+    useState<string>("0");
   const [businessBlog, setBusinessBlog] = useState(false);
   const [businessPortfolio, setBusinessPortfolio] = useState(false);
   const [businessBooking, setBusinessBooking] = useState(false);
@@ -261,9 +282,27 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  const launchTotalSectionsNum = useMemo(() => {
+    if (launchTotalSections === "") return 5;
+    const n = parseInt(launchTotalSections, 10);
+    return Number.isNaN(n) ? 5 : Math.max(5, n);
+  }, [launchTotalSections]);
+
+  const businessTotalPagesNum = useMemo(() => {
+    if (businessTotalPages === "") return 5;
+    const n = parseInt(businessTotalPages, 10);
+    return Number.isNaN(n) ? 5 : Math.max(5, n);
+  }, [businessTotalPages]);
+
+  const businessAdvancedServicePagesNum = useMemo(() => {
+    if (businessAdvancedServicePages === "") return 0;
+    const n = parseInt(businessAdvancedServicePages, 10);
+    return Number.isNaN(n) ? 0 : Math.max(0, n);
+  }, [businessAdvancedServicePages]);
+
   const launchInputs: LaunchInputs = useMemo(
     () => ({
-      totalSections: launchTotalSections,
+      totalSections: launchTotalSectionsNum,
       bookingIntegration: launchBooking,
       googleReviewsIntegration: launchReviews,
       serviceAreaMap: launchServiceArea,
@@ -275,7 +314,7 @@ export default function Home() {
       rushBuild: launchRush,
     }),
     [
-      launchTotalSections,
+      launchTotalSectionsNum,
       launchBooking,
       launchReviews,
       launchServiceArea,
@@ -289,8 +328,8 @@ export default function Home() {
 
   const businessInputs: BusinessInputs = useMemo(
     () => ({
-      standardPages: businessTotalPages,
-      advancedServicePages: businessAdvancedServicePages,
+      standardPages: businessTotalPagesNum,
+      advancedServicePages: businessAdvancedServicePagesNum,
       blogSetup: businessBlog,
       portfolioGallery: businessPortfolio,
       bookingIntegration: businessBooking,
@@ -304,8 +343,8 @@ export default function Home() {
       customFunctionality: businessCustomFunctionality,
     }),
     [
-      businessTotalPages,
-      businessAdvancedServicePages,
+      businessTotalPagesNum,
+      businessAdvancedServicePagesNum,
       businessBlog,
       businessPortfolio,
       businessBooking,
@@ -348,7 +387,7 @@ export default function Home() {
   const resetAll = useCallback(() => {
     setProjectType("launch");
     setLaunchSectionComplexity("essentials");
-    setLaunchTotalSections(5);
+    setLaunchTotalSections("5");
     setLaunchBooking(false);
     setLaunchReviews(false);
     setLaunchServiceArea(false);
@@ -360,8 +399,8 @@ export default function Home() {
     setLaunchRush(false);
 
     setBusinessPageRange("fiveOrLess");
-    setBusinessTotalPages(5);
-    setBusinessAdvancedServicePages(0);
+    setBusinessTotalPages("5");
+    setBusinessAdvancedServicePages("0");
     setBusinessBlog(false);
     setBusinessPortfolio(false);
     setBusinessBooking(false);
@@ -566,7 +605,7 @@ export default function Home() {
                       type="button"
                       onClick={() => {
                         setLaunchSectionComplexity("essentials");
-                        setLaunchTotalSections(5);
+                        setLaunchTotalSections("5");
                       }}
                       className={`rounded-2xl border px-3.5 py-3 text-left text-sm shadow-sm transition ${launchSectionComplexity === "essentials"
                         ? "border-rose-400 bg-rose-50"
@@ -609,16 +648,23 @@ export default function Home() {
                         </span>
                         <div className="inline-flex items-center gap-2">
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             min={5}
                             value={launchTotalSections}
-                            onChange={(event) => {
-                              const next = Number(event.target.value) || 5;
-                              setLaunchTotalSections(
-                                Number.isNaN(next) ? 5 : Math.max(5, next)
-                              );
+                            onChange={(e) => setLaunchTotalSections(e.target.value)}
+                            onBlur={() => {
+                              const n = parseInt(launchTotalSections, 10);
+                              if (
+                                launchTotalSections === "" ||
+                                Number.isNaN(n) ||
+                                n < 5
+                              ) {
+                                setLaunchTotalSections("5");
+                              }
                             }}
-                            className="w-20 rounded-full border border-rose-200 bg-white px-3 py-1 text-sm text-zinc-900 shadow-sm focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-300"
+                            className="min-w-[4rem] rounded-full border border-rose-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-300"
                           />
                           <span className="text-xs text-zinc-500">
                             First 5 sections are included.
@@ -963,7 +1009,7 @@ export default function Home() {
                       type="button"
                       onClick={() => {
                         setBusinessPageRange("fiveOrLess");
-                        setBusinessTotalPages(5);
+                        setBusinessTotalPages("5");
                       }}
                       className={`rounded-2xl border px-3.5 py-3 text-left text-xs sm:text-sm shadow-sm transition ${businessPageRange === "fiveOrLess"
                         ? "border-rose-400 bg-rose-50"
@@ -978,7 +1024,7 @@ export default function Home() {
                       type="button"
                       onClick={() => {
                         setBusinessPageRange("sixToEight");
-                        setBusinessTotalPages(7);
+                        setBusinessTotalPages("7");
                       }}
                       className={`rounded-2xl border px-3.5 py-3 text-left text-xs sm:text-sm shadow-sm transition ${businessPageRange === "sixToEight"
                         ? "border-rose-400 bg-rose-50"
@@ -996,7 +1042,7 @@ export default function Home() {
                       type="button"
                       onClick={() => {
                         setBusinessPageRange("ninePlus");
-                        setBusinessTotalPages(9);
+                        setBusinessTotalPages("9");
                       }}
                       className={`rounded-2xl border px-3.5 py-3 text-left text-xs sm:text-sm shadow-sm transition ${businessPageRange === "ninePlus"
                         ? "border-rose-400 bg-rose-50"
@@ -1018,16 +1064,23 @@ export default function Home() {
                         </span>
                         <div className="inline-flex items-center gap-2">
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             min={5}
                             value={businessTotalPages}
-                            onChange={(event) => {
-                              const next = Number(event.target.value) || 5;
-                              setBusinessTotalPages(
-                                Number.isNaN(next) ? 5 : Math.max(5, next)
-                              );
+                            onChange={(e) => setBusinessTotalPages(e.target.value)}
+                            onBlur={() => {
+                              const n = parseInt(businessTotalPages, 10);
+                              if (
+                                businessTotalPages === "" ||
+                                Number.isNaN(n) ||
+                                n < 5
+                              ) {
+                                setBusinessTotalPages("5");
+                              }
                             }}
-                            className="w-20 rounded-full border border-rose-200 bg-white px-3 py-1 text-sm text-zinc-900 shadow-sm focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-300"
+                            className="min-w-[4rem] rounded-full border border-rose-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-300"
                           />
                           <span className="text-xs text-zinc-500">
                             First 5 pages are included.
@@ -1050,8 +1103,8 @@ export default function Home() {
                   <div className="inline-flex gap-2 rounded-full bg-rose-50 p-1">
                     <button
                       type="button"
-                      onClick={() => setBusinessAdvancedServicePages(0)}
-                      className={`rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${businessAdvancedServicePages === 0
+                      onClick={() => setBusinessAdvancedServicePages("0")}
+                      className={`rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${businessAdvancedServicePagesNum === 0
                         ? "bg-white text-zinc-900 shadow-sm"
                         : "text-zinc-500"
                         }`}
@@ -1062,10 +1115,12 @@ export default function Home() {
                       type="button"
                       onClick={() =>
                         setBusinessAdvancedServicePages(
-                          businessAdvancedServicePages || 3
+                          businessAdvancedServicePagesNum > 0
+                            ? businessAdvancedServicePages
+                            : "3"
                         )
                       }
-                      className={`rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${businessAdvancedServicePages > 0
+                      className={`rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${businessAdvancedServicePagesNum > 0
                         ? "bg-white text-zinc-900 shadow-sm"
                         : "text-zinc-500"
                         }`}
@@ -1074,7 +1129,7 @@ export default function Home() {
                     </button>
                   </div>
 
-                  {businessAdvancedServicePages > 0 && (
+                  {businessAdvancedServicePagesNum > 0 && (
                     <div className="mt-2 space-y-1">
                       <label className="flex flex-col gap-1 text-xs text-zinc-700 sm:text-sm">
                         <span>
@@ -1083,16 +1138,28 @@ export default function Home() {
                         </span>
                         <div className="inline-flex items-center gap-2">
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             min={1}
                             value={businessAdvancedServicePages}
-                            onChange={(event) => {
-                              const next = Number(event.target.value) || 1;
-                              setBusinessAdvancedServicePages(
-                                Number.isNaN(next) ? 1 : Math.max(1, next)
+                            onChange={(e) =>
+                              setBusinessAdvancedServicePages(e.target.value)
+                            }
+                            onBlur={() => {
+                              const n = parseInt(
+                                businessAdvancedServicePages,
+                                10
                               );
+                              if (
+                                businessAdvancedServicePages === "" ||
+                                Number.isNaN(n) ||
+                                n < 1
+                              ) {
+                                setBusinessAdvancedServicePages("1");
+                              }
                             }}
-                            className="w-20 rounded-full border border-rose-200 bg-white px-3 py-1 text-sm text-zinc-900 shadow-sm focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-300"
+                            className="min-w-[4rem] rounded-full border border-rose-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-300"
                           />
                           <span className="text-xs text-zinc-500">
                             Each advanced service page adds{" "}
